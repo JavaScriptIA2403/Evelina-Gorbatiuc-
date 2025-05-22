@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Простой Калькулятор</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .calculator {
+      background: #333;
+      border-radius: 10px;
+      padding: 20px;
+      width: 320px;
+      box-shadow: 0 0 15px #000;
+    }
+    .display {
+      background: black;
+      color: #0f0;
+      font-size: 2.5em;
+      text-align: right;
+      padding: 15px 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      user-select: none;
+      height: 50px;
+      overflow-x: auto;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 15px;
+      border: none;
+      border-radius: 5px;
+      background: #555;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #777;
+    }
+    button:active {
+      background: #999;
+    }
+    button.zero {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div id="display" class="display">0</div>
+    <div class="buttons">
+      <button data-action="clear">C</button>
+      <button data-action="divide">÷</button>
+      <button data-action="multiply">×</button>
+      <button data-action="backspace">←</button>
+
+      <button>7</button>
+      <button>8</button>
+      <button>9</button>
+      <button data-action="subtract">−</button>
+
+      <button>4</button>
+      <button>5</button>
+      <button>6</button>
+      <button data-action="add">+</button>
+
+      <button>1</button>
+      <button>2</button>
+      <button>3</button>
+      <button data-action="equals">=</button>
+
+      <button class="zero">0</button>
+      <button>.</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    let current = '';
+    let previous = '';
+    let operation = null;
+
+    function updateDisplay(value) {
+      display.textContent = value;
+    }
+
+    function clear() {
+      current = '';
+      previous = '';
+      operation = null;
+      updateDisplay('0');
+    }
+
+    function deleteLast() {
+      current = current.slice(0, -1);
+      updateDisplay(current === '' ? '0' : current);
+    }
+
+    function appendNumber(number) {
+      if (number === '.' && current.includes('.')) return;
+      current += number;
+      updateDisplay(current);
+    }
+
+    function chooseOperation(op) {
+      if (current === '') return;
+      if (previous !== '') {
+        compute();
+      }
+      operation = op;
+      previous = current;
+      current = '';
+    }
+
+    function compute() {
+      let computation;
+      const prev = parseFloat(previous);
+      const curr = parseFloat(current);
+      if (isNaN(prev) || isNaN(curr)) return;
+
+      switch (operation) {
+        case '+':
+          computation = prev + curr;
+          break;
+        case '−':
+          computation = prev - curr;
+          break;
+        case '×':
+          computation = prev * curr;
+          break;
+        case '÷':
+          if (curr === 0) {
+            updateDisplay('Ошибка');
+            current = '';
+            previous = '';
+            operation = null;
+            return;
+          }
+          computation = prev / curr;
+          break;
+        default:
+          return;
+      }
+      current = computation.toString();
+      operation = null;
+      previous = '';
+      updateDisplay(current);
+    }
+
+    document.querySelectorAll('.buttons button').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.action;
+        const text = button.textContent;
+
+        if (!action) {
+          appendNumber(text);
+        } else {
+          switch (action) {
+            case 'clear': clear(); break;
+            case 'backspace': deleteLast(); break;
+            case 'add': chooseOperation('+'); break;
+            case 'subtract': chooseOperation('−'); break;
+            case 'multiply': chooseOperation('×'); break;
+            case 'divide': chooseOperation('÷'); break;
+            case 'equals': compute(); break;
+          }
+        }
+      });
+    });
+
+    clear();
+  </script>
+</body>
+</html>
+
